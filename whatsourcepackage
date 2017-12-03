@@ -1,0 +1,100 @@
+#!/bin/bash
+
+##MANPAGE##
+if [[ $1 == "-help" ]]
+ then
+  echo "Info:
+  whatsourcepackage v1.0
+  February 2014
+  iJunkie22
+
+Tips:
+  If your query has a space, please use quotes.
+  Keep in mind the search is case-sensitive.
+
+Usage:
+  whatsourcepackage [query]
+     /or/
+  whatsourcepackage [option] [query]
+
+Options:
+  -full        States all paths that matched"
+exit
+fi
+
+##MAIN##
+found_result="no"
+
+if [[ "$1" == "-full" ]]
+then
+search_subject="$2"
+ (for file in /var/lib/dpkg/info/*.list
+ do
+  (while read line;do
+     if [[ "$line" == "$search_subject" ]] 
+      then
+       echo "$(basename ${file/.list/})"
+       found_result=$"yes"
+       finally_found_result="yes"
+        break
+     fi
+   done < "$file")
+ done )
+
+if [[ $found_result == "no" ]]
+ then
+echo "No exact matches found- now looking for partials"
+(for file in /var/lib/dpkg/info/*.list
+do
+
+  (while read line;do
+     if [[ "$line" == *"$search_subject"* ]]
+       then
+        echo "-------------------"
+        echo "$(basename ${file/.list/}) :"
+        break
+    fi
+  done < "$file")
+
+  (while read line;do
+     if [[ "$line" == *"$search_subject"* ]]
+       then
+        echo "
+ $line"
+     fi
+   done < "$file")
+done )
+fi
+else
+search_subject="$1"
+(for file in /var/lib/dpkg/info/*.list
+ do
+  (while read line;do
+     if [[ "$line" == "$search_subject" ]] 
+      then
+       echo "$(basename ${file/.list/})"
+       found_result=$"yes"
+        break
+     fi
+   done < "$file")
+ done )
+
+if [[ $found_result == "no" ]]
+ then
+
+(for file in /var/lib/dpkg/info/*.list
+do
+
+  (while read line;do
+     if [[ "$line" == *"$search_subject"* ]]
+       then
+        echo "$(basename ${file/.list/})"
+        break
+    fi
+  done < "$file")
+
+done )
+fi
+fi
+
+exit
